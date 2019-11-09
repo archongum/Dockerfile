@@ -1,0 +1,23 @@
+name: Docker Image CI - spark:2.4.4-oj8-livy-base
+
+on:
+  push
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    env:
+      TZ: Asia/Shanghai
+      DOCKER_USER: dockergum
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+      IMAGE_NAME: dockergum/spark:2.4.4-oj8-livy-base
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile --tag $IMAGE_NAME
+        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+        docker push $IMAGE_NAME

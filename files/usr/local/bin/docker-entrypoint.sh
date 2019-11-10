@@ -49,11 +49,19 @@ if [ "$1" = 'supervisord' ]; then
 
         # change some privileges
         echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;" | mysql
-        echo "CREATE DATABASE metastore;" | mysql
+        echo "CREATE DATABASE metastore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" | mysql
         mysqladmin -u root password 'root'
 
+        # change HMS charset
+        cat >> ${HIVE_HOME}/scripts/metastore/upgrade/mysql/hive-schema-3.1.0.mysql.sql <<EOF
+alter table COLUMNS_V2 modify column COMMENT varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+alter table TABLE_PARAMS modify column PARAM_VALUE MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+alter table PARTITION_PARAMS  modify column PARAM_VALUE varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+alter table PARTITION_KEYS  modify column PKEY_COMMENT varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+alter table INDEX_PARAMS  modify column PARAM_VALUE varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+EOF
         # init HMS
-        $HIVE_HOME/bin/schematool -dbType mysql -initSchema
+        ${HIVE_HOME}/bin/schematool -dbType mysql -initSchema
 
         # stop mysql and wait
         killall mysqld

@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/bash -l
 if [ "$1" = 'run-zeppelin' ]; then
     set -xeuo pipefail
 
@@ -12,7 +11,7 @@ if [ "$1" = 'run-zeppelin' ]; then
         cp -r ${ZEPPELIN_HOME}/default/conf/* /etc/zeppelin
     fi
 
-    exec ${ZEPPELIN_HOME}/bin/zeppelin.sh
+    ${ZEPPELIN_HOME}/bin/zeppelin.sh
 else
     exec "$@"
 fi
